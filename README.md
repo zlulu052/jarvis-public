@@ -1,34 +1,83 @@
-# Jarvis PWA v5.1 Public · BYOK
+# Jarvis Personal AI
 
-这是给公开分享使用的版本：**本地功能免费使用，AI 功能由每个用户填写自己的 CloseAI API Key。**
+一个以本地数据为核心的个人 AI PWA。
 
-## 使用方式
+## 3 分钟部署自己的 Jarvis
 
-- 不填写 API Key 也可以使用：记录、手动标签、搜索、趋势图、量化数据、备份/恢复等本地功能。
-- 使用“记录并分析 / AI 深度分析 / 识图 / Jarvis 问答 / AI 生成计划 / 阶段总结”时，需要在 **设置 → AI 服务设置** 填写自己的 API Key 和模型名称。
-- 默认 CloseAI 兼容接口固定为 `https://api.openai-proxy.org/v1`。
-- API Key 不写入 IndexedDB，不进入 JSON 备份。用户可选择：仅本次打开期间保存，或记住在当前设备浏览器。
-- AI 请求时，用户自己的 Key 会通过 HTTPS 临时经过本项目的 Vercel Serverless 接口，再转发给 CloseAI；服务端代码不持久化 Key。
+### 1. 创建自己的仓库
+点击页面顶部：
 
-## 部署
+Use this template → Create a new repository
 
-这个公开版**不再需要**在 Vercel 配置 `OPENAI_API_KEY`。
+仓库名称可以填写：
 
-直接把仓库部署到 Vercel 即可。每位使用者在自己的设备上配置自己的 Key。
+jarvis-personal
 
-## v5.1 主要功能
+---
 
-- 情绪 / 精力 / 压力 1–10 数值化，手填优先，AI 可保守估算并标注来源。
-- 图片识别与结构化记录。
-- 标签创建 / 修改 / 删除。
-- 高频标签、标签共现、趋势与心理学/行为科学解释。
-- Jarvis 问答 + 专题空间。
-- 长期计划生成、复盘、阶段总结。
-- IndexedDB 本地长期保存。
-- JSON 导入 / 导出、本地恢复点。
+### 2. 部署到 Vercel
+登录 Vercel：
 
-## 隐私边界
+https://vercel.com
 
-原始生活数据默认保存在用户当前浏览器 IndexedDB 中。使用 AI 功能时，为完成分析，所需文本、图片和相关上下文会被发送给模型服务。
+选择：
 
-**本地存储不等于 AI 分析内容永不离开设备。**
+Add New → Project
+
+然后导入刚刚创建的 GitHub 仓库。
+
+点击：
+
+Deploy
+
+一般不需要修改其他设置。
+
+---
+
+### 3. 打开自己的 Jarvis
+
+部署完成后，Vercel 会生成类似：
+
+https://xxxx.vercel.app
+
+打开这个地址即可使用。
+
+手机用户可以使用 Safari 打开后：
+
+分享 → 添加到主屏幕
+
+---
+
+## AI 功能
+
+记录、标签、趋势、计划等基础功能不需要 API Key。
+
+如果需要使用：
+
+- AI 分析
+- Jarvis 问答
+- 图片识别
+- AI 计划
+- AI 洞察
+
+请进入：
+
+设置 → AI 服务设置
+
+填写自己的 API Key。
+
+每个人使用自己的 API Key，不会消耗作者的 API 额度。
+
+---
+
+## 数据存在哪里？
+
+Jarvis 的主要个人数据保存在你自己的浏览器本地。
+
+建议定期使用：
+
+设置 → 导出备份
+
+保存自己的 JSON 备份文件。
+
+注意：使用 AI 分析时，相关内容仍需要发送给你所配置的模型服务。
