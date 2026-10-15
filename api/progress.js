@@ -1,0 +1,7 @@
+import {getAIConfig,handleConfigError} from './_client.js';
+function outText(d){if(d.output_text)return d.output_text;let s='';for(const i of d.output||[])for(const c of i.content||[])if(c.type==='output_text'&&c.text)s+=c.text;return s.trim()}
+function parse(s){return JSON.parse(String(s||'').trim().replace(/^```json\s*/i,'').replace(/^```\s*/,'').replace(/```$/,'').trim())}
+export default async function handler(req,res){
+ if(req.method!=='POST')return res.status(405).json({error:'Method not allowed'}); let key,base,model;try{({key,base,model}=getAIConfig(req))}catch(e){return handleConfigError(res,e)}
+ try{const b=req.body||{};const instructions=`你是 Jarvis 的进度教练。基于原计划、本次汇报和近期记录复盘。不要因一次失败推倒重来，优先识别阻力、调整负荷并维持连续性。只返回合法JSON：{"progress_percent":35,"status":"正常|落后|超前|需要调整","plan_status":"active|paused|done","summary":"不超过120字的进度判断","observations":["..."],"next_actions":["接下来7天动作1","动作2"],"adjustments":["需要调整的计划内容"],"next_milestone":"下一个里程碑"}`;const input=JSON.stringify({profile:b.profile||{},plan:b.plan||{},checkin:b.checkin||'',recent:b.recent||[]},null,2);const r=await fetch(`${base}/responses`,{method:'POST',headers:{Authorization:`Bearer ${key}`,'Content-Type':'application/json'},body:JSON.stringify({model,instructions,input})});const d=await r.json();if(!r.ok)return res.status(r.status).json({error:d?.error?.message||'模型调用失败'});try{return res.status(200).json(parse(outText(d)))}catch{return res.status(500).json({error:'进度复盘结构解析失败，请重试'})}}catch(e){return res.status(500).json({error:String(e?.message||e)})}
+}
