@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#071018">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Jarvis">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<link rel="stylesheet" href="/app.css">
+<title>Jarvis 5.1 Public</title>
+</head>
+<body>
+<div class="app-shell">
+  <header class="topbar">
+    <div class="brand-wrap">
+      <div class="brand-orb" aria-hidden="true"></div>
+      <div>
+        <div class="brand">JARVIS <span class="version">5.1 PUBLIC</span></div>
+        <div class="subtitle">PERSONAL INTELLIGENCE SYSTEM</div>
+      </div>
+    </div>
+    <div class="top-actions">
+      <button class="icon-btn" id="quickAddTop" aria-label="快速记录" title="快速记录">＋</button>
+      <div class="online-chip"><span class="online-dot"></span><span>ONLINE</span></div>
+    </div>
+  </header>
+
+  <nav class="desktop-nav" aria-label="主导航">
+    <button class="nav-btn active" data-page="dashboard">首页</button>
+    <button class="nav-btn" data-page="records">记录</button>
+    <button class="nav-btn" data-page="plans">计划</button>
+    <button class="nav-btn" data-page="insights">洞察</button>
+    <button class="nav-btn" data-page="ask">问答</button>
+    <button class="nav-btn" data-page="settings">设置</button>
+  </nav>
+
+  <main>
+    <section class="page active" id="page-dashboard">
+      <div class="hero-grid">
+        <div class="hero-card card">
+          <div class="eyebrow">今日管家</div>
+          <h1 id="greetingTitle">今天想记录什么？</h1>
+          <p class="hero-copy">随手写发生了什么。Jarvis 会保存、分类、分析，并把长期变化留在你的个人数据库里。</p>
+          <textarea id="quickText" class="hero-input" placeholder="例如：今天中午和同事吃饭，下午特别困；晚上练了40分钟力量，心情比昨天好。"></textarea>
+          <div class="composer-tag-box">
+            <div class="composer-tag-head">
+              <div>
+                <div class="composer-tag-title">标签</div>
+                <div class="composer-tag-hint">不选择＝Jarvis 自动分类；手动选择后，以你的分类为准。</div>
+              </div>
+              <button class="tag-add-inline" id="quickNewTagBtn" type="button">＋ 新标签</button>
+            </div>
+            <div class="manual-tag-picker" id="quickTagPicker"></div>
+          </div>
+          <div class="image-tools">
+            <input id="quickImageInput" class="hidden" type="file" accept="image/*">
+            <button class="secondary-btn image-pick-btn" id="quickImageBtn" type="button">🖼 添加图片</button>
+            <button class="secondary-btn image-recognize-btn hidden" id="quickRecognizeBtn" type="button">🔎 识图</button>
+            <div class="image-preview hidden" id="quickImagePreview"></div>
+          </div>
+          <details class="metric-details">
+            <summary>补充量化状态（可选）</summary><div class="metric-hint">手填数值优先；如果不填，选择“记录并分析”后，Jarvis 会在文字信号足够清晰时保守估算情绪 / 精力 / 压力，并用 ≈ 标记。</div>
+            <div class="metric-grid">
+              <label>心情 1-10<input id="metricMood" type="number" min="1" max="10" step="1" inputmode="numeric"></label>
+              <label>精力 1-10<input id="metricEnergy" type="number" min="1" max="10" step="1" inputmode="numeric"></label>
+              <label>压力 1-10<input id="metricStress" type="number" min="1" max="10" step="1" inputmode="numeric"></label>
+              <label>睡眠（小时）<input id="metricSleep" type="number" min="0" max="24" step="0.1" inputmode="decimal"></label>
+              <label>体重 kg<input id="metricWeight" type="number" min="20" max="300" step="0.1" inputmode="decimal"></label>
+            </div>
+          </details>
+          <div class="composer-actions">
+            <button class="secondary-btn" id="saveOnlyBtn">仅记录</button>
+            <button class="primary-btn" id="analyzeBtn">记录并分析 · 自备 Key</button>
+          </div>
+          <div class="status-line" id="composerStatus"></div>
+        </div>
+
+        <div class="side-stack">
+          <div class="card compact-card" id="pendingMiniCard">
+            <div class="card-title-row"><span class="eyebrow">待处理</span><span class="count-badge" id="pendingCount">0</span></div>
+            <div id="pendingMiniContent" class="muted-copy">目前没有待补充的问题。</div>
+          </div>
+          <div class="card compact-card">
+            <div class="eyebrow">当前重点</div>
+            <div id="focusSummary" class="focus-summary">记录几天后，这里会出现你的近期重点。</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stats-grid" id="statsGrid">
+        <div class="stat-card"><div class="stat-label">本月记录</div><div class="stat-value" id="statMonth">0</div><div class="stat-sub">条</div></div>
+        <div class="stat-card"><div class="stat-label">连续记录</div><div class="stat-value" id="statStreak">0</div><div class="stat-sub">天</div></div>
+        <div class="stat-card"><div class="stat-label">活跃计划</div><div class="stat-value" id="statPlans">0</div><div class="stat-sub">个</div></div>
+        <div class="stat-card"><div class="stat-label">近期高频</div><div class="stat-value small-value" id="statTopTag">—</div><div class="stat-sub">标签</div></div>
+      </div>
+
+      <div class="dashboard-grid">
+        <div class="card chart-card">
+          <div class="card-head">
+            <div><div class="eyebrow">近30天趋势</div><h2>状态曲线</h2></div>
+            <select id="dashboardMetricSelect" class="mini-select">
+              <option value="mood">心情</option>
+              <option value="energy">精力</option>
+              <option value="stress">压力</option>
+              <option value="sleep_hours">睡眠</option>
+              <option value="weight_kg">体重</option>
+            </select>
+          </div>
+          <div class="canvas-wrap"><canvas id="dashboardTrendCanvas"></canvas></div>
+          <div class="chart-empty hidden" id="dashboardTrendEmpty">还没有足够的量化数据。记录时填写心情/睡眠等，曲线会自动出现。</div>
+        </div>
+        <div class="card chart-card">
+          <div class="card-head"><div><div class="eyebrow">近30天主题</div><h2>标签分布</h2></div></div>
+          <div class="tag-bars" id="dashboardTagBars"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><div><div class="eyebrow">最近</div><h2>时间轴</h2></div><button class="text-btn" data-goto="records">查看全部</button></div>
+        <div id="dashboardTimeline"></div>
+      </div>
+    </section>
+
+    <section class="page" id="page-records">
+      <div class="page-head">
+        <div><div class="eyebrow">PERSONAL LOG</div><h1>记录</h1><p>按时间、标签和关键词整理你的人生流水账。</p></div>
+        <button class="primary-btn small-btn" id="newRecordBtn">＋ 新记录</button>
+      </div>
+      <div class="card filter-card">
+        <input id="recordSearch" class="search-input" placeholder="搜索记录、分析内容……">
+        <div class="filter-row">
+          <select id="recordRange" class="mini-select">
+            <option value="all">全部时间</option>
+            <option value="7">最近7天</option>
+            <option value="30">最近30天</option>
+            <option value="90">最近90天</option>
+          </select>
+          <select id="recordStatus" class="mini-select">
+            <option value="all">全部状态</option>
+            <option value="analyzed">已分析</option>
+            <option value="pending">待补充</option>
+            <option value="note">仅记录</option>
+          </select>
+        </div>
+        <div class="tag-filter-scroll" id="recordTagFilters"></div>
+      </div>
+      <div id="recordList"></div>
+      <div class="empty-state hidden" id="recordEmpty">没有找到符合条件的记录。</div>
+    </section>
+
+    <section class="page" id="page-plans">
+      <div class="page-head">
+        <div><div class="eyebrow">LONG-TERM EXECUTION</div><h1>长期计划</h1><p>健身、读书、学习、存钱或任何需要持续推进的目标。</p></div>
+        <button class="primary-btn small-btn" id="openPlanCreateBtn">＋ 新计划</button>
+      </div>
+      <div id="planList"></div>
+      <div class="empty-state" id="planEmpty">还没有长期计划。创建一个目标，Jarvis 会拆成里程碑和每周清单。</div>
+    </section>
+
+    <section class="page" id="page-insights">
+      <div class="page-head">
+        <div><div class="eyebrow">ANALYTICS</div><h1>洞察</h1><p>把流水账变成趋势、规律和行动建议。</p></div>
+        <select id="insightRange" class="mini-select">
+          <option value="7">7天</option>
+          <option value="30" selected>30天</option>
+          <option value="90">90天</option>
+          <option value="all">全部</option>
+        </select>
+      </div>
+
+      <p class="muted-copy metric-source-note">状态数值为 1–10 分；手填优先，AI 估算只在信息足够时补充。分析详情中 ≈ 表示 AI 估算。</p>
+      <div class="stats-grid insight-stats insight-stats-v5">
+        <div class="stat-card"><div class="stat-label">记录数</div><div class="stat-value" id="insightRecords">0</div></div>
+        <div class="stat-card"><div class="stat-label">平均心情</div><div class="stat-value" id="insightMood">—</div><div class="stat-sub">/10</div></div>
+        <div class="stat-card"><div class="stat-label">平均精力</div><div class="stat-value" id="insightEnergy">—</div><div class="stat-sub">/10</div></div>
+        <div class="stat-card"><div class="stat-label">平均压力</div><div class="stat-value" id="insightStress">—</div><div class="stat-sub">/10</div></div>
+        <div class="stat-card"><div class="stat-label">平均睡眠</div><div class="stat-value" id="insightSleep">—</div></div>
+        <div class="stat-card"><div class="stat-label">高频主题</div><div class="stat-value small-value" id="insightTopTag">—</div></div>
+      </div>
+
+      <div class="card chart-card">
+        <div class="card-head">
+          <div><div class="eyebrow">趋势</div><h2>状态变化</h2></div>
+          <select id="insightMetricSelect" class="mini-select">
+            <option value="mood">心情</option>
+            <option value="energy">精力</option>
+            <option value="stress">压力</option>
+            <option value="sleep_hours">睡眠</option>
+            <option value="weight_kg">体重</option>
+            <option value="workout_minutes">运动分钟</option>
+            <option value="reading_minutes">阅读分钟</option>
+          </select>
+        </div>
+        <div class="canvas-wrap large"><canvas id="insightTrendCanvas"></canvas></div>
+        <div class="chart-empty hidden" id="insightTrendEmpty">这个指标还没有数据。</div>
+      </div>
+
+      <div class="insight-grid">
+        <div class="card chart-card">
+          <div class="card-head"><div><div class="eyebrow">主题</div><h2>标签频率</h2></div></div>
+          <div class="tag-bars" id="insightTagBars"></div>
+        </div>
+        <div class="card">
+          <div class="card-head insight-ai-head"><div><div class="eyebrow">Jarvis</div><h2>深度趋势解读</h2></div><button class="secondary-btn small-btn" id="aiInsightBtn">AI 深度分析 · 自备 Key</button></div>
+          <div class="focus-tag-row"><label>重点分析<select id="insightFocusTag" class="mini-select"><option value="auto">自动选择高频主题</option></select></label></div>
+          <div id="aiInsightContent" class="muted-copy">Jarvis 会结合数值趋势、高频标签、共现事件和相关记录，解释“发生了什么、可能为什么、你可以怎么做”。</div>
+          <div class="status-line" id="aiInsightStatus"></div>
+        </div>
+      </div>
+    </section>
+
+
+    <section class="page" id="page-ask">
+      <div class="page-head">
+        <div><div class="eyebrow">ASK JARVIS</div><h1>Jarvis 问答</h1><p>自由提问。Jarvis 会先读取你的长期记录、相关事件和专题历史；信息不足时会先追问。</p></div>
+        <button class="secondary-btn small-btn" id="newSpaceBtn">＋ 新建专题</button>
+      </div>
+      <div class="ask-layout">
+        <aside class="card ask-sidebar">
+          <div class="eyebrow">专题空间</div>
+          <div id="askSpaceList" class="space-list"></div>
+          <p class="muted-copy ask-tip">例如：关系专题、公务员考试、减脂、工作发展。专题会优先调用与它相关的记录。</p>
+        </aside>
+        <div class="card ask-main">
+          <div class="card-head"><div><div class="eyebrow" id="askSpaceEyebrow">当前专题</div><h2 id="askSpaceTitle">全局问答</h2></div><button class="ghost-btn" id="clearAskBtn">清空对话</button></div>
+          <div id="askThread" class="ask-thread"></div>
+          <div class="ask-compose">
+            <textarea id="askText" class="ask-textarea" placeholder="例如：根据我最近一个月的记录，为什么我总在下午效率下降？如果信息不够，先问我。"></textarea>
+            <div class="image-tools ask-image-tools">
+              <input id="askImageInput" class="hidden" type="file" accept="image/*">
+              <button class="secondary-btn" id="askImageBtn" type="button">🖼 添加图片</button>
+              <div class="image-preview hidden" id="askImagePreview"></div>
+            </div>
+            <button class="primary-btn" id="askSendBtn">向 Jarvis 提问</button>
+            <div class="status-line" id="askStatus"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="page" id="page-settings">
+      <div class="page-head">
+        <div><div class="eyebrow">CONTROL CENTER</div><h1>设置</h1><p>管理 AI 服务、标签、长期档案和本地数据。</p></div>
+      </div>
+
+
+      <div class="card ai-config-card">
+        <div class="card-head">
+          <div><div class="eyebrow">BYOK · BRING YOUR OWN KEY</div><h2>AI 服务设置</h2></div>
+          <span class="ai-config-badge" id="aiConfigBadge">未配置</span>
+        </div>
+        <p class="muted-copy">记录、标签、趋势图、搜索、备份等本地功能无需 API Key。只有“AI 分析 / 识图 / Jarvis 问答 / AI 计划 / 阶段总结”等功能需要你自己的 CloseAI API Key。</p>
+        <div class="privacy-note">
+          <b>隐私说明</b>：API Key 不会写入 Jarvis 数据库，也不会进入导出的备份。调用 AI 时，Key 会通过 HTTPS 临时发送到本站 Vercel 中转接口，再转发给 CloseAI；本站代码不会把 Key 保存到服务器数据库。
+        </div>
+        <div class="form-grid ai-config-grid">
+          <label class="span-2">CloseAI API Key
+            <div class="key-input-row"><input id="aiApiKey" type="password" autocomplete="off" placeholder="sk-..."><button class="ghost-btn" id="toggleApiKeyBtn" type="button">显示</button></div>
+          </label>
+          <label>模型名称<input id="aiModel" placeholder="例如 gpt-6-luna"></label>
+          <label class="remember-label"><span>保存方式</span><select id="aiRemember"><option value="session">仅本次打开期间</option><option value="local">记住在本机</option></select></label>
+        </div>
+        <div class="ai-provider-line"><span>接口：</span><code>https://api.openai-proxy.org/v1</code></div>
+        <div class="composer-actions ai-config-actions">
+          <button class="primary-btn" id="saveAIConfigBtn" type="button">保存 AI 设置</button>
+          <button class="secondary-btn" id="testAIConfigBtn" type="button">测试连接</button>
+          <button class="secondary-btn" id="clearAIConfigBtn" type="button">清除 Key</button>
+        </div>
+        <div class="status-line" id="aiConfigStatus"></div>
+      </div>
+
+      <div class="settings-grid">
+        <div class="card">
+          <div class="card-head"><div><div class="eyebrow">标签系统</div><h2>标签管理</h2></div><button class="secondary-btn small-btn" id="newTagBtn">＋ 新标签</button></div>
+          <p class="muted-copy">Jarvis 会自动分类。你可以手动改标签；这些纠错会作为以后分类的参考。</p>
+          <div id="tagManagerList"></div>
+        </div>
+
+        <div class="card">
+          <div class="eyebrow">长期档案</div><h2>个人背景</h2>
+          <div class="form-grid">
+            <label>称呼<input id="profileName"></label>
+            <label>年龄<input id="profileAge" inputmode="numeric"></label>
+            <label>性别<input id="profileSex"></label>
+            <label>身高<input id="profileHeight" placeholder="例如 175cm"></label>
+            <label>体重<input id="profileWeight" placeholder="例如 70kg"></label>
+            <label>职业<input id="profileJob"></label>
+            <label class="span-2">作息 / 上下班<input id="profileSchedule"></label>
+            <label class="span-2">目前最重要的目标<input id="profileGoals"></label>
+            <label class="span-2">价值排序 / 偏好<input id="profileValues"></label>
+            <label class="span-2">其他长期背景<textarea id="profileNotes"></textarea></label>
+          </div>
+          <button class="primary-btn" id="saveProfileBtn">保存档案</button>
+          <div class="status-line" id="profileStatus"></div>
+        </div>
+      </div>
+
+      <div class="settings-grid">
+        <div class="card">
+          <div class="eyebrow">本地数据</div><h2>备份与恢复</h2>
+          <p class="muted-copy">数据实时保存在当前手机的 IndexedDB。不会上传到 iCloud。建议偶尔导出一份 JSON 到“我的 iPhone”。</p>
+          <div class="button-stack">
+            <button class="secondary-btn" id="exportBtn">导出完整备份</button>
+            <button class="secondary-btn" id="importBtn">导入备份</button>
+            <input id="importFile" class="hidden" type="file" accept="application/json">
+            <button class="secondary-btn" id="createSnapshotBtn">创建本地恢复点</button>
+            <button class="secondary-btn" id="restoreSnapshotBtn">恢复最近恢复点</button>
+          </div>
+          <div class="status-line" id="backupStatus"></div>
+        </div>
+
+        <div class="card">
+          <div class="eyebrow">长期记忆</div><h2>阶段总结</h2>
+          <p class="muted-copy">阶段总结用于长期分析，不会替代原始记录。</p>
+          <div class="button-stack">
+            <button class="secondary-btn memory-summary-btn" data-days="7">更新最近7天总结</button>
+            <button class="secondary-btn memory-summary-btn" data-days="30">更新最近30天总结</button>
+            <button class="secondary-btn memory-summary-btn" data-days="90">更新最近90天总结</button>
+          </div>
+          <div id="summaryList" class="summary-list"></div>
+          <div class="status-line" id="summaryStatus"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<nav class="mobile-nav" aria-label="手机导航">
+  <button class="mobile-nav-btn active" data-page="dashboard"><span>⌂</span><small>首页</small></button>
+  <button class="mobile-nav-btn" data-page="records"><span>☰</span><small>记录</small></button>
+  <button class="mobile-nav-btn" data-page="plans"><span>✓</span><small>计划</small></button>
+  <button class="mobile-nav-btn" data-page="insights"><span>⌁</span><small>洞察</small></button>
+  <button class="mobile-nav-btn" data-page="ask"><span>?</span><small>问答</small></button>
+  <button class="mobile-nav-btn" data-page="settings"><span>⚙</span><small>设置</small></button>
+</nav>
+
+<div class="modal-backdrop hidden" id="analysisModal">
+  <div class="modal-panel large-modal">
+    <button class="modal-close" data-close="analysisModal">×</button>
+    <div id="analysisModalBody"></div>
+  </div>
+</div>
+
+<div class="modal-backdrop hidden" id="tagEditModal">
+  <div class="modal-panel">
+    <button class="modal-close" data-close="tagEditModal">×</button>
+    <div class="eyebrow">分类纠错</div><h2>编辑这条记录的标签</h2>
+    <div id="tagEditChoices" class="tag-choice-grid"></div>
+    <div class="modal-actions">
+      <button class="secondary-btn" id="tagEditNewTagBtn" type="button">＋ 新建标签</button>
+      <button class="primary-btn" id="saveEntryTagsBtn">保存标签</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop hidden" id="tagCreateModal">
+  <div class="modal-panel">
+    <button class="modal-close" data-close="tagCreateModal">×</button>
+    <div class="eyebrow">自定义分类</div><h2>新建标签</h2>
+    <label>标签名称<input id="newTagName" placeholder="例如：社区工作"></label>
+    <label>颜色<input id="newTagColor" type="color" value="#73d7ff"></label>
+    <button class="primary-btn" id="createTagBtn">创建</button>
+  </div>
+</div>
+
+<div class="modal-backdrop hidden" id="recordModal">
+  <div class="modal-panel large-modal">
+    <button class="modal-close" data-close="recordModal">×</button>
+    <div class="eyebrow">QUICK LOG</div><h2>新记录</h2>
+    <textarea id="recordModalText" class="tall" placeholder="今天发生了什么？"></textarea>
+    <div class="image-tools">
+      <input id="modalImageInput" class="hidden" type="file" accept="image/*">
+      <button class="secondary-btn" id="modalImageBtn" type="button">🖼 添加图片</button>
+      <button class="secondary-btn hidden" id="modalRecognizeBtn" type="button">🔎 识图</button>
+      <div class="image-preview hidden" id="modalImagePreview"></div>
+    </div>
+    <div class="composer-tag-box modal-tag-box">
+      <div class="composer-tag-head">
+        <div>
+          <div class="composer-tag-title">标签</div>
+          <div class="composer-tag-hint">不选则自动分类；你的手动分类不会被 AI 覆盖。</div>
+        </div>
+        <button class="tag-add-inline" id="modalNewTagBtn" type="button">＋ 新标签</button>
+      </div>
+      <div class="manual-tag-picker" id="modalTagPicker"></div>
+    </div>
+    <div class="modal-actions"><button class="secondary-btn" id="modalSaveOnly">仅记录</button><button class="primary-btn" id="modalAnalyze">记录并分析 · 自备 Key</button></div>
+    <div class="status-line" id="recordModalStatus"></div>
+  </div>
+</div>
+
+<div class="modal-backdrop hidden" id="planCreateModal">
+  <div class="modal-panel large-modal">
+    <button class="modal-close" data-close="planCreateModal">×</button>
+    <div class="eyebrow">NEW PLAN</div><h2>创建长期计划</h2>
+    <div class="form-grid">
+      <label class="span-2">目标<input id="planGoal" placeholder="例如：12周建立稳定健身习惯"></label>
+      <label>当前基础<textarea id="planCurrent"></textarea></label>
+      <label>限制条件<textarea id="planConstraints"></textarea></label>
+      <label>截止日期<input id="planDeadline" type="date"></label>
+      <label>可投入时间<input id="planTime" placeholder="例如 每周4次×45分钟"></label>
+      <label>节奏<select id="planPace"><option value="稳健">稳健</option><option value="积极">积极</option><option value="轻量">轻量</option></select></label>
+      <label>结果指标<input id="planMetric" placeholder="例如：每周训练次数"></label>
+    </div>
+    <button class="primary-btn" id="createPlanBtn">生成完整计划 · 自备 Key</button>
+    <div class="status-line" id="planCreateStatus"></div>
+  </div>
+</div>
+
+<div class="modal-backdrop hidden" id="pendingModal">
+  <div class="modal-panel large-modal">
+    <button class="modal-close" data-close="pendingModal">×</button>
+    <div class="eyebrow">NEED MORE CONTEXT</div><h2>Jarvis 还需要这些信息</h2>
+    <div id="pendingQuestions"></div>
+    <textarea id="pendingReply" class="tall" placeholder="按顺序回答，想到多少写多少。"></textarea>
+    <button class="primary-btn" id="submitPendingBtn">补充后继续分析</button>
+    <div class="status-line" id="pendingStatus"></div>
+  </div>
+</div>
+
+<script src="/app.js"></script>
+</body>
+</html>
